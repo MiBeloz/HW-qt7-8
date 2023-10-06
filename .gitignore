@@ -9,3 +9,5 @@
 !*.qrc
 !*.ico
 !*.png
+!PG_Libs/
+!*.dll

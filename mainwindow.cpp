@@ -9,13 +9,13 @@ MainWindow::MainWindow(QWidget *parent)
     ui->setupUi(this);
     ui->lb_statusConnect->setStyleSheet("color:red");
     ui->pb_request->setEnabled(false);
+    ui->cb_category->setEnabled(false);
 
     /*
      * Выделим память под необходимые объекты. Все они наследники
      * QObject, поэтому воспользуемся иерархией.
     */
-
-    dataDb = new DbData(this);
+    dialogLogin = new Dialog_login(this);
     dataBase = new DataBase(this);
     msg = new QMessageBox(this);
 
@@ -31,7 +31,7 @@ MainWindow::MainWindow(QWidget *parent)
      * Устанавливаем данные для подключениея к БД.
      * Поскольку метод небольшой используем лямбда-функцию.
      */
-    connect(dataDb, &DbData::sig_sendData, this, [&](QVector<QString> receivData){
+    connect(dialogLogin, &Dialog_login::sig_sendData, this, [&](QVector<QString> receivData){
         dataForConnect = receivData;
     });
 
@@ -45,6 +45,7 @@ MainWindow::MainWindow(QWidget *parent)
      */
     connect(dataBase, &DataBase::sig_SendStatusConnection, this, &MainWindow::ReceiveStatusConnectionToDB);
 
+    connect(ui->cb_category, &QComboBox::activated, ui->pb_request, &QPushButton::click);
 }
 
 MainWindow::~MainWindow()
@@ -58,13 +59,12 @@ MainWindow::~MainWindow()
 void MainWindow::on_act_addData_triggered()
 {
     //Отобразим диалоговое окно. Какой метод нужно использовать?
-    dataDb->show();
+    dialogLogin->show();
 }
 
 /*!
  * @brief Слот выполняет подключение к БД. И отображает ошибки.
  */
-
 void MainWindow::on_act_connect_triggered()
 {
     /*
@@ -73,16 +73,13 @@ void MainWindow::on_act_connect_triggered()
      * "Отключено" мы осуществляем подключение, если "Подключено" то
      * отключаемся
     */
-
     if(ui->lb_statusConnect->text() == "Отключено"){
 
        ui->lb_statusConnect->setText("Подключение");
        ui->lb_statusConnect->setStyleSheet("color : black");
 
-
        auto conn = [&]{dataBase->ConnectToDataBase(dataForConnect);};
-       QtConcurrent::run(conn);
-
+       static_cast<void>(QtConcurrent::run(conn));
     }
     else{
         dataBase->DisconnectFromDataBase(DB_NAME);
@@ -90,8 +87,8 @@ void MainWindow::on_act_connect_triggered()
         ui->act_connect->setText("Подключиться");
         ui->lb_statusConnect->setStyleSheet("color:red");
         ui->pb_request->setEnabled(false);
+        ui->cb_category->setEnabled(false);
     }
-
 }
 
 /*!
@@ -100,18 +97,21 @@ void MainWindow::on_act_connect_triggered()
 void MainWindow::on_pb_request_clicked()
 {
     ///Тут должен быть код ДЗ
-
-    //ДЗ
-    if (ui->cb_category->currentIndex() == requestAllFilms) {
-        //auto req = [&]{dataBase->RequestToDB(request, requestAllFilms);};
-        //QtConcurrent::run(req);
-        dataBase->RequestToDB(request, requestAllFilms);
+    if (ui->cb_category->currentIndex() == requestAllFilms){
+        auto req = [&]{dataBase->RequestToDB(request, requestAllFilms);};
+        static_cast<void>(QtConcurrent::run(req));
+    }
+    else if (ui->cb_category->currentIndex() ==requestComedy){
+        auto req = [&]{dataBase->RequestToDB(request, requestComedy);};
+        static_cast<void>(QtConcurrent::run(req));
+    }
+    else if (ui->cb_category->currentIndex() ==requestHorrors){
+        auto req = [&]{dataBase->RequestToDB(request, requestHorrors);};
+        static_cast<void>(QtConcurrent::run(req));
     }
     else {
-        auto req = [&]{dataBase->RequestToDB(request, requestComedy);};
-        QtConcurrent::run(req);
+        ui->tb_result->setModel(nullptr);
     }
-    //end ДЗ
 }
 
 /*!
@@ -121,37 +121,10 @@ void MainWindow::on_pb_request_clicked()
  */
 void MainWindow::ScreenDataFromDB(const QTableView *tableView, int typeRequest)
 {
-
     ///Тут должен быть код ДЗ
-    switch (typeRequest) {
-
-    case requestAllFilms:
-        ui->tb_result->setModel(tableView->model());
-    case requestHorrors:
-    case requestComedy:{
-
-//        ui->tb_result->setRowCount(tableView->rowCount( ));
-//        ui->tb_result->setColumnCount(tableView->columnCount( ));
-//        QStringList hdrs;
-//        for(int i = 0; i < tableView->columnCount(); ++i){
-//            hdrs << tableView->horizontalHeaderItem(i)->text();
-//        }
-//        ui->tb_result->setHorizontalHeaderLabels(hdrs);
-
-//        for(int i = 0; i<tableView->rowCount(); ++i){
-//            for(int j = 0; j<tableView->columnCount(); ++j){
-//                ui->tb_result->setItem(i,j, tableView->item(i,j)->clone());
-//            }
-//        }
-
-//        ui->tb_result->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
-
-        break;
-
-    }
-    default:
-        break;
-    }
+    ui->tb_result->setModel(tableView->model());
+    ui->tb_result->resizeColumnToContents(0);
+    ui->tb_result->resizeColumnToContents(1);
 }
 /*!
  * \brief Метод изменяет стотояние формы в зависимости от статуса подключения к БД
@@ -164,6 +137,7 @@ void MainWindow::ReceiveStatusConnectionToDB(bool status)
         ui->lb_statusConnect->setText("Подключено к БД");
         ui->lb_statusConnect->setStyleSheet("color:green");
         ui->pb_request->setEnabled(true);
+        ui->cb_category->setEnabled(true);
     }
     else{
         dataBase->DisconnectFromDataBase(DB_NAME);
@@ -173,8 +147,9 @@ void MainWindow::ReceiveStatusConnectionToDB(bool status)
         ui->lb_statusConnect->setStyleSheet("color:red");
         msg->exec();
     }
-
 }
 
-
-
+void MainWindow::on_pb_clear_clicked()
+{
+    ui->tb_result->setModel(nullptr);
+}

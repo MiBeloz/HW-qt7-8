@@ -5,7 +5,7 @@
 #include <QMessageBox>
 #include <QtConcurrent>
 #include "database.h"
-#include "dbdata.h"
+#include "dialog_login.h"
 
 
 
@@ -33,7 +33,9 @@ private slots:
     void on_pb_request_clicked();
 
 
-signals:
+    void on_pb_clear_clicked();
+
+  signals:
     void sig_RequestToDb(QString request);
 
 private:
@@ -41,7 +43,7 @@ private:
     QVector<QString> dataForConnect; //Данные для подключения к БД.
 
     Ui::MainWindow *ui;
-    DbData *dataDb;
+    Dialog_login *dialogLogin;
     DataBase* dataBase;
     QMessageBox* msg;
 

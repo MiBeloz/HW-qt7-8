@@ -21,9 +21,9 @@ set(PROJECT_SOURCES
         mainwindow.ui
         database.h
         database.cpp
-        dbdata.h
-        dbdata.cpp
-        dbdata.ui
+        dialog_login.h
+        dialog_login.cpp
+        dialog_login.ui
 )
 
 if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)

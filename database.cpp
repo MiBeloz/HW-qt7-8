@@ -4,15 +4,17 @@ DataBase::DataBase(QObject *parent)
     : QObject{parent}
 {
     dataBase = new QSqlDatabase();
-    pQueryModel = new QSqlQueryModel(this);
-    pTableModel = new QSqlTableModel(this, *dataBase);
-    pTableView = new QTableView;
+    pTableModel = nullptr;
+    pQueryModel = nullptr;
+    pTableView = nullptr;
 }
 
 DataBase::~DataBase()
 {
-    delete dataBase;
+    delete pTableModel;
+    delete pQueryModel;
     delete pTableView;
+    delete dataBase;
 }
 
 /*!
@@ -38,12 +40,16 @@ void DataBase::ConnectToDataBase(QVector<QString> data)
     dataBase->setPassword(data[pass]);
     dataBase->setPort(data[port].toInt());
 
-
     ///Тут должен быть код ДЗ
-
     bool status;
     status = dataBase->open();
     emit sig_SendStatusConnection(status);
+
+    if (status) {
+        pTableModel = new QSqlTableModel(nullptr, *dataBase);
+        pQueryModel = new QSqlQueryModel;
+        pTableView = new QTableView;
+    }
 }
 
 /*!
@@ -52,6 +58,10 @@ void DataBase::ConnectToDataBase(QVector<QString> data)
  */
 void DataBase::DisconnectFromDataBase(QString nameDb)
 {
+    delete pTableModel;
+    delete pQueryModel;
+    delete pTableView;
+
     *dataBase = QSqlDatabase::database(nameDb);
     dataBase->close();
 }
@@ -63,70 +73,44 @@ void DataBase::DisconnectFromDataBase(QString nameDb)
 void DataBase::RequestToDB(QString request, int requestType)
 {
     ///Тут должен быть код ДЗ
-
-    //ДЗ
-
-    //end ДЗ
-
-    //ДЗ
-//    pQueryModel.setQuery("SELECT title, release_year FROM film", *dataBase);
-//    pQueryModel.setHeaderData(0, Qt::Horizontal, QObject::tr("title"));
-//    pQueryModel.setHeaderData(1, Qt::Horizontal, QObject::tr("release_year"));
-    //end ДЗ
-
-
-    switch (requestType) {
-    case requestAllFilms:
-    {
-        pTableModel->setTable("film");
+    if (requestType == requestAllFilms) {
+        pTableModel->setQuery("SELECT title, description FROM film", *dataBase);
         pTableModel->setEditStrategy(QSqlTableModel::OnManualSubmit);
-        pTableModel->select();
-        pTableModel->setHeaderData(0, Qt::Horizontal, tr("Name"));
-        pTableModel->setHeaderData(1, Qt::Horizontal, tr("Salary"));
+        pTableModel->setHeaderData(0, Qt::Horizontal, tr("Название фильма"));
+        pTableModel->setHeaderData(1, Qt::Horizontal, tr("Описание фильма"));
 
         pTableView->setModel(pTableModel);
 
         emit sig_SendDataFromDB(pTableView, requestAllFilms);
-        break;
     }
-    case requestComedy:
-    {
+    else if (requestType == requestComedy){
+        pQueryModel->setQuery("SELECT title, description FROM film f "
+                              "JOIN film_category fc on f.film_id = fc.film_id "
+                              "JOIN category c on c.category_id = fc.category_id "
+                              "WHERE c.name = 'Comedy'",
+                               *dataBase);
+
+        pQueryModel->setHeaderData(0, Qt::Horizontal, tr("Название фильма"));
+        pQueryModel->setHeaderData(1, Qt::Horizontal, tr("Описание фильма"));
+
+        pTableView->setModel(pQueryModel);
+
         emit sig_SendDataFromDB(pTableView, requestComedy);
-        break;
     }
-    case requestHorrors:
-    {
-        //tableWidget->setColumnCount(3);
-        //tableWidget->setRowCount(0);
-        //QStringList hdrs;
-        //hdrs << "Название" << "Год выпуска" << "Жанр";
-        //tableWidget->setHorizontalHeaderLabels(hdrs);
+    else if (requestType == requestHorrors){
+        pQueryModel->setQuery("SELECT title, description FROM film f "
+                               "JOIN film_category fc on f.film_id = fc.film_id "
+                               "JOIN category c on c.category_id = fc.category_id "
+                               "WHERE c.name = 'Horror'",
+                               *dataBase);
 
-        //uint32_t conterRows = 0;
+        pQueryModel->setHeaderData(0, Qt::Horizontal, tr("Название фильма"));
+        pQueryModel->setHeaderData(1, Qt::Horizontal, tr("Описание фильма"));
 
-        //while(simpleQuery->next()){
-        //    QString str;
-        //    tableWidget->insertRow(conterRows);
+        pTableView->setModel(pQueryModel);
 
-        //    for(int i = 0; i<tableWidget->columnCount(); ++i){
-
-        //        str = simpleQuery->value(i).toString();
-        //        QTableWidgetItem *item = new QTableWidgetItem(str);
-        //        tableWidget->setItem(tableWidget->rowCount() - 1, i, item);
-
-        //    }
-        //    ++conterRows;
-        //}
-
-        emit sig_SendDataFromDB(pTableView, requestHorrors);
-        break;
+        emit sig_SendDataFromDB(pTableView, requestComedy);
     }
-
-    default:
-        break;
-    }
-
-
 }
 
 /*!

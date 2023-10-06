@@ -7,6 +7,7 @@
 #include <QSqlDatabase>
 #include <QSqlTableModel>
 #include <QSqlQueryModel>
+#include <QMessageBox>
 
 #define POSTGRE_DRIVER "QPSQL"
 #define DB_NAME "MyDB"
@@ -33,7 +34,6 @@ enum requestType{
 };
 
 
-
 class DataBase : public QObject
 {
     Q_OBJECT
@@ -49,7 +49,6 @@ public:
     void ConnectToDataBase(QVector<QString> dataForConnect);
 
 signals:
-
    void sig_SendDataFromDB(const QTableView *tableView, int typeR);
    void sig_SendStatusConnection(bool);
 
@@ -58,11 +57,9 @@ signals:
 private:
     QSqlDatabase* dataBase;
 
-    //ДЗ
     QSqlTableModel *pTableModel;
     QSqlQueryModel *pQueryModel;
     QTableView *pTableView;
-    //end ДЗ
 };
 
 #endif // DATABASE_H
