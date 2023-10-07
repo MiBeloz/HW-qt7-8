@@ -74,42 +74,24 @@ void DataBase::RequestToDB(QString request, int requestType)
 {
     ///Тут должен быть код ДЗ
     if (requestType == requestAllFilms) {
-        pTableModel->setQuery("SELECT title, description FROM film", *dataBase);
+        pTableModel->setQuery(request, *dataBase);
         pTableModel->setEditStrategy(QSqlTableModel::OnManualSubmit);
         pTableModel->setHeaderData(0, Qt::Horizontal, tr("Название фильма"));
         pTableModel->setHeaderData(1, Qt::Horizontal, tr("Описание фильма"));
 
         pTableView->setModel(pTableModel);
 
-        emit sig_SendDataFromDB(pTableView, requestAllFilms);
+        emit sig_SendDataFromDB(pTableView);
     }
-    else if (requestType == requestComedy){
-        pQueryModel->setQuery("SELECT title, description FROM film f "
-                              "JOIN film_category fc on f.film_id = fc.film_id "
-                              "JOIN category c on c.category_id = fc.category_id "
-                              "WHERE c.name = 'Comedy'",
-                               *dataBase);
+    else if (requestType == requestComedy || requestType == requestHorrors){
+        pQueryModel->setQuery(request, *dataBase);
 
         pQueryModel->setHeaderData(0, Qt::Horizontal, tr("Название фильма"));
         pQueryModel->setHeaderData(1, Qt::Horizontal, tr("Описание фильма"));
 
         pTableView->setModel(pQueryModel);
 
-        emit sig_SendDataFromDB(pTableView, requestComedy);
-    }
-    else if (requestType == requestHorrors){
-        pQueryModel->setQuery("SELECT title, description FROM film f "
-                               "JOIN film_category fc on f.film_id = fc.film_id "
-                               "JOIN category c on c.category_id = fc.category_id "
-                               "WHERE c.name = 'Horror'",
-                               *dataBase);
-
-        pQueryModel->setHeaderData(0, Qt::Horizontal, tr("Название фильма"));
-        pQueryModel->setHeaderData(1, Qt::Horizontal, tr("Описание фильма"));
-
-        pTableView->setModel(pQueryModel);
-
-        emit sig_SendDataFromDB(pTableView, requestComedy);
+        emit sig_SendDataFromDB(pTableView);
     }
 }
 

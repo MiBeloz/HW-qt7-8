@@ -98,15 +98,15 @@ void MainWindow::on_pb_request_clicked()
 {
     ///Тут должен быть код ДЗ
     if (ui->cb_category->currentIndex() == requestAllFilms){
-        auto req = [&]{dataBase->RequestToDB(request, requestAllFilms);};
+        auto req = [&]{dataBase->RequestToDB(strRequestAll, requestAllFilms);};
         static_cast<void>(QtConcurrent::run(req));
     }
-    else if (ui->cb_category->currentIndex() ==requestComedy){
-        auto req = [&]{dataBase->RequestToDB(request, requestComedy);};
+    else if (ui->cb_category->currentIndex() == requestComedy){
+        auto req = [&]{dataBase->RequestToDB(strRequestComedy, requestComedy);};
         static_cast<void>(QtConcurrent::run(req));
     }
-    else if (ui->cb_category->currentIndex() ==requestHorrors){
-        auto req = [&]{dataBase->RequestToDB(request, requestHorrors);};
+    else if (ui->cb_category->currentIndex() == requestHorrors){
+        auto req = [&]{dataBase->RequestToDB(strRequestHorror, requestHorrors);};
         static_cast<void>(QtConcurrent::run(req));
     }
     else {
@@ -119,7 +119,7 @@ void MainWindow::on_pb_request_clicked()
  * \param widget
  * \param typeRequest
  */
-void MainWindow::ScreenDataFromDB(const QTableView *tableView, int typeRequest)
+void MainWindow::ScreenDataFromDB(const QTableView *tableView)
 {
     ///Тут должен быть код ДЗ
     ui->tb_result->setModel(tableView->model());

@@ -49,7 +49,7 @@ public:
     void ConnectToDataBase(QVector<QString> dataForConnect);
 
 signals:
-   void sig_SendDataFromDB(const QTableView *tableView, int typeR);
+   void sig_SendDataFromDB(const QTableView *tableView);
    void sig_SendStatusConnection(bool);
 
 

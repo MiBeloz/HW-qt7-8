@@ -23,7 +23,7 @@ public:
 
 
 public slots:
-    void ScreenDataFromDB(const QTableView *tableView, int typeRequest);
+    void ScreenDataFromDB(const QTableView *tableView);
     void ReceiveStatusConnectionToDB(bool status);
 
 
@@ -47,9 +47,17 @@ private:
     DataBase* dataBase;
     QMessageBox* msg;
 
-    QString request = "SELECT title, release_year, c.name  FROM film f "
-                      "JOIN film_category fc on f.film_id = fc.film_id "
-                      "JOIN category c on c.category_id  = fc.category_id";
+    QString strRequestAll = "SELECT title, description FROM film";
+
+    QString strRequestComedy = "SELECT title, description FROM film f "
+                            "JOIN film_category fc on f.film_id = fc.film_id "
+                            "JOIN category c on c.category_id = fc.category_id "
+                            "WHERE c.name = 'Comedy'";
+
+    QString strRequestHorror = "SELECT title, description FROM film f "
+                            "JOIN film_category fc on f.film_id = fc.film_id "
+                            "JOIN category c on c.category_id = fc.category_id "
+                            "WHERE c.name = 'Horror'";
 
 
 
